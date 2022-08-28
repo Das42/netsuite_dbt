@@ -1,0 +1,82 @@
+
+# Name your project! Project names should contain only lowercase characters
+# and underscores. A good package name should reflect your organization's
+# name or the intended use of these models
+name: 'netsuite_dbt'
+version: '1.0.0'
+config-version: 2
+require-dbt-version: [">=1.0.0", "<2.0.0"]
+
+# This setting configures which "profile" dbt uses for this project.
+profile: 'qos_snowflake'
+
+# These configurations specify where dbt should look for different types of files.
+# The `source-paths` config, for example, states that models in this project can be
+# found in the "models/" directory. You probably won't need to change these!
+model-paths: ["models"]
+analysis-paths: ["analysis"]
+test-paths: ["tests"]
+seed-paths: ["data"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"  # directory which will store compiled SQL files
+clean-targets:         # directories to be removed by `dbt clean`
+    - "target"
+    - "dbt_modules"
+
+vars:
+    netsuite_data_model: netsuite2 #netsuite by default
+    netsuite_database: datalake_prod
+    netsuite_schema: netsuite_suiteanalytics
+
+# This package includes all source columns defined in the macros folder.
+# To add additional columns to this package, do so by adding our pass-through
+# column variables to the vars declaration section above:
+
+    # accounts_pass_through_columns:
+    #     - name: "new_custom_field"
+    #       alias: "custom_field"
+    # classes_pass_through_columns:
+    #     - name: "this_field"
+    # departments_pass_through_columns:
+    #     - name: "unique_string_field"
+    #       alias: "field_id"
+    #       transform_sql: "cast(field_id as string)"
+    # transactions_pass_through_columns:
+    #     - name: "that_field"
+    # transaction_lines_pass_through_columns:
+    #     - name: "other_id"
+    #       alias: "another_id"
+    #       transform_sql: "cast(another_id as int64)"
+    # customers_pass_through_columns:
+    #     - name: "customer_custom_field"
+    #       alias: "customer_field"
+    # locations_pass_through_columns:
+    #     - name: "location_custom_field"
+    # subsidiaries_pass_through_columns:
+    #     - name: "sub_field"
+    #       alias: "subsidiary_field"
+    # consolidated_exchange_rates_pass_through_columns:
+    #     - name: "consolidate_this_field"
+
+# Additionally, this package allows users to pass columns from the
+# netsuite__transaction_details table into the netsuite__balance_sheet and
+# netsuite__income_statement tables. See below for an example of how to
+# passthrough transaction detail columns into the respective balance sheet and
+# income statement final tables within the vars section above:
+
+    # balance_sheet_transaction_detail_columns: ['company_name','vendor_name']
+    # income_statement_transaction_detail_columns: ['is_account_intercompany','location_name']
+
+# By default, this package builds the Netsuite staging models within a schema
+# titled (<target_schema> + _netsuite_source) and your Netsuite modeling models
+# within a schema titled (<target_schema> + _netsuite) in your destination.
+# If this is not where you would like your Netsuite data to be written to,
+# add the following configuration to your root dbt_project.yml file:
+
+models:
+    netsuite_source:
+      +schema: staging # leave blank for just the target_schema
+    netsuite:
+      +schema: reporting # leave blank for just the target_schema
